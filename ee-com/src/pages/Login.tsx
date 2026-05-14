@@ -15,7 +15,7 @@ function Login() {
       navigate("/dashboard/home");
     }
       else if (username === "tech" && password === "1234") {
-      navigate("/dashboard/home"); 
+      navigate("/technician/customers"); 
       } 
     else {
       alert("Invalid credentials");
