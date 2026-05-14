@@ -3,20 +3,22 @@ import express from "express";
 import {
   getInstallations,
   addInstallation,
-  assignTechnician,
-  completeInstallation,
+  updateInstallation,
+  deleteInstallation,
 } from "../controllers/installationController.js";
 
 const router = express.Router();
 
+// ✅ GET ALL INSTALLATIONS
 router.get("/", getInstallations);
 
+// ✅ ADD INSTALLATION
 router.post("/", addInstallation);
 
-// ✅ ADMIN ASSIGNS TECHNICIAN
-router.put("/assign/:id", assignTechnician);
+// ✅ UPDATE INSTALLATION
+router.put("/:id", updateInstallation);
 
-// ✅ TECHNICIAN COMPLETES
-router.put("/complete/:id", completeInstallation);
+// ✅ DELETE INSTALLATION
+router.delete("/:id", deleteInstallation);
 
 export default router;

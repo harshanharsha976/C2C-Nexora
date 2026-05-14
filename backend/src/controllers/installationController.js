@@ -1,62 +1,30 @@
 import Installation from "../models/Installation.js";
 
-// GET ALL INSTALLATIONS
+// GET
 export const getInstallations = async (req, res) => {
-  try {
-    const data = await Installation.find();
-    res.json(data);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+  const data = await Installation.find();
+  res.json(data);
 };
 
-// ADD INSTALLATION
+// ADD
 export const addInstallation = async (req, res) => {
-  try {
-    const newInstallation = new Installation(req.body);
-
-    await newInstallation.save();
-
-    res.status(201).json(newInstallation);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+  const inst = new Installation(req.body);
+  const saved = await inst.save();
+  res.status(201).json(saved);
 };
 
-// ✅ ASSIGN TECHNICIAN
-export const assignTechnician = async (req, res) => {
-  try {
-    const { technician, assignedBy } = req.body;
-
-    const updatedInstallation = await Installation.findByIdAndUpdate(
-      req.params.id,
-      {
-        technician,
-        assignedBy,
-        status: "Assigned",
-      },
-      { new: true },
-    );
-
-    res.json(updatedInstallation);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+// UPDATE (status)
+export const updateInstallation = async (req, res) => {
+  const updated = await Installation.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    { new: true },
+  );
+  res.json(updated);
 };
 
-// COMPLETE INSTALLATION
-export const completeInstallation = async (req, res) => {
-  try {
-    const updated = await Installation.findByIdAndUpdate(
-      req.params.id,
-      {
-        status: "Completed",
-      },
-      { new: true },
-    );
-
-    res.json(updated);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+// DELETE
+export const deleteInstallation = async (req, res) => {
+  await Installation.findByIdAndDelete(req.params.id);
+  res.json({ message: "Deleted" });
 };
