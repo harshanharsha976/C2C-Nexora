@@ -1,9 +1,27 @@
-import mongoose from "mongoose";
+import { DataTypes } from "sequelize";
+import { sequelize } from "../config/mysql.js";
 
-const customerSchema = new mongoose.Schema({
-  name: String,
-  phone: String,
-  address: String,
-});
+const Customer = sequelize.define(
+  "Customer",
+  {
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
 
-export default mongoose.model("Customer", customerSchema);
+    phone: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+
+    address: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+  },
+  {
+    timestamps: true,
+  },
+);
+
+export default Customer;

@@ -1,58 +1,65 @@
 import Customer from "../models/Customer.js";
 
-// GET ALL CUSTOMERS
+// GET
 export const getCustomers = async (req, res) => {
   try {
-    const data = await Customer.find();
+    const data = await Customer.findAll();
+
     res.json(data);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  } catch (err) {
+    res.status(500).json({
+      message: err.message,
+    });
   }
 };
 
-// ADD CUSTOMER
+// ADD
 export const addCustomer = async (req, res) => {
   try {
-    const newData = new Customer(req.body);
+    const saved = await Customer.create(req.body);
 
-    await newData.save();
-
-    res.status(201).json(newData);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(201).json(saved);
+  } catch (err) {
+    res.status(500).json({
+      message: err.message,
+    });
   }
 };
 
-// UPDATE CUSTOMER
+// UPDATE
 export const updateCustomer = async (req, res) => {
   try {
-    const updatedCustomer = await Customer.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true },
-    );
+    await Customer.update(req.body, {
+      where: {
+        id: req.params.id,
+      },
+    });
 
-    if (!updatedCustomer) {
-      return res.status(404).json({ message: "Customer not found" });
-    }
+    const updated = await Customer.findByPk(req.params.id);
 
-    res.json(updatedCustomer);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({
+      message: err.message,
+    });
   }
 };
 
-// DELETE CUSTOMER
+// DELETE
 export const deleteCustomer = async (req, res) => {
   try {
-    const deletedCustomer = await Customer.findByIdAndDelete(req.params.id);
+    await Customer.destroy({
+      where: {
+        id: req.params.id,
+      },
+    });
 
-    if (!deletedCustomer) {
-      return res.status(404).json({ message: "Customer not found" });
-    }
-
-    res.json({ message: "Customer deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.json({
+      message: "Deleted",
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: err.message,
+    });
   }
 };

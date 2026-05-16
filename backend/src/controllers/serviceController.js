@@ -1,44 +1,67 @@
 import Service from "../models/Service.js";
 
-// GET ALL
+// ✅ GET ALL
 export const getServices = async (req, res) => {
   try {
-    const data = await Service.find().sort({ createdAt: -1 });
+    const data = await Service.findAll({
+      order: [["createdAt", "DESC"]],
+    });
+
     res.json(data);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      message: err.message,
+    });
   }
 };
 
-// ADD
+// ✅ ADD
 export const addService = async (req, res) => {
   try {
-    const service = new Service(req.body);
-    const saved = await service.save();
+    const saved = await Service.create(req.body);
+
     res.status(201).json(saved);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      message: err.message,
+    });
   }
 };
 
-// UPDATE
+// ✅ UPDATE
 export const updateService = async (req, res) => {
   try {
-    const updated = await Service.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
+    await Service.update(req.body, {
+      where: {
+        id: req.params.id,
+      },
     });
+
+    const updated = await Service.findByPk(req.params.id);
+
     res.json(updated);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      message: err.message,
+    });
   }
 };
 
-// DELETE
+// ✅ DELETE
 export const deleteService = async (req, res) => {
   try {
-    await Service.findByIdAndDelete(req.params.id);
-    res.json({ message: "Deleted" });
+    await Service.destroy({
+      where: {
+        id: req.params.id,
+      },
+    });
+
+    res.json({
+      message: "Deleted",
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      message: err.message,
+    });
   }
 };

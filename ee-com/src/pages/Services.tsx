@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { items } from "../store/itemStore";
 
 type Service = {
-  _id: string;
+  id: string;
   customer: string;
   product: string;
   issue: string;
@@ -28,7 +28,12 @@ function Services() {
     try {
       const res = await fetch(`${API}/services`);
       const data = await res.json();
-      setServiceList(data);
+
+      if (Array.isArray(data)) {
+        setServiceList(data);
+      } else {
+        setServiceList([]);
+      }
     } catch (err) {
       console.error("Error fetching services:", err);
     }
@@ -60,6 +65,7 @@ function Services() {
         }),
       });
 
+      // ✅ RESET
       setCustomer("");
       setProduct("");
       setIssue("");
@@ -76,8 +82,12 @@ function Services() {
     try {
       await fetch(`${API}/services/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "Completed" }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          status: "Completed",
+        }),
       });
 
       fetchServices();
@@ -101,12 +111,22 @@ function Services() {
 
   // 🔍 FILTER
   const filtered = serviceList
-    .filter((s) => (statusFilter === "All" ? true : s.status === statusFilter))
+    .filter((s) =>
+      statusFilter === "All"
+        ? true
+        : s.status === statusFilter,
+    )
     .filter(
       (s) =>
-        s.customer.toLowerCase().includes(search.toLowerCase()) ||
-        s.product.toLowerCase().includes(search.toLowerCase()) ||
-        s.issue.toLowerCase().includes(search.toLowerCase()),
+        s.customer
+          .toLowerCase()
+          .includes(search.toLowerCase()) ||
+        s.product
+          .toLowerCase()
+          .includes(search.toLowerCase()) ||
+        s.issue
+          .toLowerCase()
+          .includes(search.toLowerCase()),
     );
 
   return (
@@ -116,22 +136,29 @@ function Services() {
       {/* FORM */}
       <div className="card p-3 mb-4 shadow-sm">
         <div className="row g-2">
+          {/* CUSTOMER */}
           <div className="col-md-3">
             <input
               className="form-control"
               placeholder="Enter Customer Name"
               value={customer}
-              onChange={(e) => setCustomer(e.target.value)}
+              onChange={(e) =>
+                setCustomer(e.target.value)
+              }
             />
           </div>
 
+          {/* PRODUCT */}
           <div className="col-md-3">
             <select
               className="form-select"
               value={product}
-              onChange={(e) => setProduct(e.target.value)}
+              onChange={(e) =>
+                setProduct(e.target.value)
+              }
             >
               <option value="">Select Product</option>
+
               {items.map((i) => (
                 <option key={i.id} value={i.name}>
                   {i.name}
@@ -140,46 +167,59 @@ function Services() {
             </select>
           </div>
 
+          {/* ISSUE */}
           <div className="col-md-2">
             <input
               className="form-control"
               placeholder="Enter issue"
               value={issue}
-              onChange={(e) => setIssue(e.target.value)}
+              onChange={(e) =>
+                setIssue(e.target.value)
+              }
             />
           </div>
 
-          {/* ✅ DATE INPUT */}
+          {/* DATE */}
           <div className="col-md-2">
             <input
               type="date"
               className="form-control"
               value={date}
-              onChange={(e) => setDate(e.target.value)}
+              onChange={(e) =>
+                setDate(e.target.value)
+              }
             />
           </div>
 
+          {/* BUTTON */}
           <div className="col-md-2">
-            <button className="btn btn-primary w-100" onClick={handleAdd}>
+            <button
+              className="btn btn-primary w-100"
+              onClick={handleAdd}
+            >
               Add
             </button>
           </div>
         </div>
       </div>
 
-      {/* SEARCH + FILTER */}
+      {/* SEARCH */}
       <div className="d-flex mb-3 gap-2">
         <input
           className="form-control"
           placeholder="Search..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) =>
+            setSearch(e.target.value)
+          }
         />
 
         <select
           className="form-select w-auto"
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
+          onChange={(e) =>
+            setStatusFilter(e.target.value)
+          }
         >
           <option value="All">All</option>
           <option value="Pending">Pending</option>
@@ -204,53 +244,68 @@ function Services() {
             </thead>
 
             <tbody>
-              {filtered.map((s, index) => (
-                <tr key={s._id}>
-                  <td>{index + 1}</td>
-                  <td>{s.customer}</td>
-                  <td>{s.product}</td>
-                  <td>{s.issue}</td>
+              {filtered.length > 0 ? (
+                filtered.map((s, index) => (
+                  <tr key={s.id}>
+                    <td>{index + 1}</td>
 
-                  {/* ✅ DATE WITHOUT TIME */}
-                  <td>
-                    {s.date ? new Date(s.date).toISOString().split("T")[0] : ""}
-                  </td>
+                    <td>{s.customer}</td>
 
-                  <td>
-                    <span
-                      className={`badge ${
-                        s.status === "Pending"
-                          ? "bg-warning text-dark"
-                          : "bg-success"
-                      }`}
-                    >
-                      {s.status}
-                    </span>
-                  </td>
+                    <td>{s.product}</td>
 
-                  <td>
-                    {s.status === "Pending" && (
-                      <button
-                        className="btn btn-success btn-sm me-2"
-                        onClick={() => handleComplete(s._id)}
+                    <td>{s.issue}</td>
+
+                    {/* DATE ONLY */}
+                    <td>
+                      {s.date
+                        ? new Date(s.date)
+                            .toISOString()
+                            .split("T")[0]
+                        : ""}
+                    </td>
+
+                    <td>
+                      <span
+                        className={`badge ${
+                          s.status === "Pending"
+                            ? "bg-warning text-dark"
+                            : "bg-success"
+                        }`}
                       >
-                        Complete
+                        {s.status}
+                      </span>
+                    </td>
+
+                    <td>
+                      {s.status ===
+                        "Pending" && (
+                        <button
+                          className="btn btn-success btn-sm me-2"
+                          onClick={() =>
+                            handleComplete(s.id)
+                          }
+                        >
+                          Complete
+                        </button>
+                      )}
+
+                      <button
+                        className="btn btn-danger btn-sm"
+                        onClick={() =>
+                          handleDelete(s.id)
+                        }
+                      >
+                        Delete
                       </button>
-                    )}
-
-                    <button
-                      className="btn btn-danger btn-sm"
-                      onClick={() => handleDelete(s._id)}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-
-              {filtered.length === 0 && (
+                    </td>
+                  </tr>
+                ))
+              ) : (
                 <tr>
-                  <td colSpan={7} className="text-center">
+                  <td
+                    colSpan={7}
+                    className="text-center"
+                  >
                     No data found
                   </td>
                 </tr>

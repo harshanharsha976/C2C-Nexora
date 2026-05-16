@@ -1,18 +1,37 @@
-import mongoose from "mongoose";
 
-const serviceSchema = new mongoose.Schema({
-  customer: String,
-  product: String,
-  issue: String,
-  status: {
-    type: String,
-    enum: ["Pending", "Completed"],
-    default: "Pending",
-  },
-  date: {
-    type: Date,
-    default: Date.now,
-  },
-});
+import { DataTypes } from "sequelize";
+import { sequelize } from "../config/mysql.js";
 
-export default mongoose.model("Service", serviceSchema);
+const Service = sequelize.define(
+  "Service",
+  {
+    customer: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+
+    product: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+
+    issue: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+
+    status: {
+      type: DataTypes.STRING,
+      defaultValue: "Pending",
+    },
+
+    date: {
+      type: DataTypes.DATEONLY,
+    },
+  },
+  {
+    timestamps: true,
+  },
+);
+
+export default Service;

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 type Service = {
-  _id: string;
+  id: string;
   customer: string;
   product: string;
   issue: string;
@@ -22,6 +22,7 @@ function StatusUpdate() {
       const data = await res.json();
 
       const pending = data.filter((s: Service) => s.status === "Pending");
+
       setServices(pending);
     } catch (err) {
       console.error(err);
@@ -37,8 +38,12 @@ function StatusUpdate() {
     try {
       await fetch(`${API}/services/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "Completed" }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          status: "Completed",
+        }),
       });
 
       fetchPending();
@@ -47,7 +52,7 @@ function StatusUpdate() {
     }
   };
 
-  // 🔍 SEARCH
+  // ✅ SEARCH
   const filtered = services.filter(
     (s) =>
       s.customer.toLowerCase().includes(search.toLowerCase()) ||
@@ -60,6 +65,7 @@ function StatusUpdate() {
 
       {/* SEARCH */}
       <input
+        type="text"
         className="form-control mb-3"
         placeholder="Search pending services..."
         value={search}
@@ -83,36 +89,37 @@ function StatusUpdate() {
             </thead>
 
             <tbody>
-              {filtered.map((s, index) => (
-                <tr key={s._id}>
-                  <td>{index + 1}</td>
-                  <td>{s.customer}</td>
-                  <td>{s.product}</td>
-                  <td>{s.issue}</td>
+              {filtered.length > 0 ? (
+                filtered.map((s, index) => (
+                  <tr key={s.id}>
+                    <td>{index + 1}</td>
+                    <td>{s.customer}</td>
+                    <td>{s.product}</td>
+                    <td>{s.issue}</td>
 
-                  {/* ✅ DATE ONLY */}
-                  <td>
-                    {s.date ? new Date(s.date).toISOString().split("T")[0] : ""}
-                  </td>
+                    <td>
+                      {s.date
+                        ? new Date(s.date).toISOString().split("T")[0]
+                        : ""}
+                    </td>
 
-                  <td>
-                    <span className="badge bg-warning text-dark">
-                      {s.status}
-                    </span>
-                  </td>
+                    <td>
+                      <span className="badge bg-warning text-dark">
+                        {s.status}
+                      </span>
+                    </td>
 
-                  <td>
-                    <button
-                      className="btn btn-success btn-sm"
-                      onClick={() => handleUpdate(s._id)}
-                    >
-                      Mark Completed
-                    </button>
-                  </td>
-                </tr>
-              ))}
-
-              {filtered.length === 0 && (
+                    <td>
+                      <button
+                        className="btn btn-success btn-sm"
+                        onClick={() => handleUpdate(s.id)}
+                      >
+                        Mark Completed
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
                 <tr>
                   <td colSpan={7} className="text-center">
                     No pending services

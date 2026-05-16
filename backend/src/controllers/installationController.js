@@ -2,29 +2,64 @@ import Installation from "../models/Installation.js";
 
 // GET
 export const getInstallations = async (req, res) => {
-  const data = await Installation.find();
-  res.json(data);
+  try {
+    const data = await Installation.findAll();
+
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({
+      message: err.message,
+    });
+  }
 };
 
 // ADD
 export const addInstallation = async (req, res) => {
-  const inst = new Installation(req.body);
-  const saved = await inst.save();
-  res.status(201).json(saved);
+  try {
+    const saved = await Installation.create(req.body);
+
+    res.status(201).json(saved);
+  } catch (err) {
+    res.status(500).json({
+      message: err.message,
+    });
+  }
 };
 
-// UPDATE (status)
+// UPDATE
 export const updateInstallation = async (req, res) => {
-  const updated = await Installation.findByIdAndUpdate(
-    req.params.id,
-    req.body,
-    { new: true },
-  );
-  res.json(updated);
+  try {
+    await Installation.update(req.body, {
+      where: {
+        id: req.params.id,
+      },
+    });
+
+    const updated = await Installation.findByPk(req.params.id);
+
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({
+      message: err.message,
+    });
+  }
 };
 
 // DELETE
 export const deleteInstallation = async (req, res) => {
-  await Installation.findByIdAndDelete(req.params.id);
-  res.json({ message: "Deleted" });
+  try {
+    await Installation.destroy({
+      where: {
+        id: req.params.id,
+      },
+    });
+
+    res.json({
+      message: "Deleted",
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: err.message,
+    });
+  }
 };

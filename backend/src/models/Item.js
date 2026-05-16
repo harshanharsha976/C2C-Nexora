@@ -1,8 +1,22 @@
-import mongoose from "mongoose";
+import { DataTypes } from "sequelize";
+import { sequelize } from "../config/mysql.js";
 
-const itemSchema = new mongoose.Schema({
-  name: String,
-  price: Number,
-});
+const Item = sequelize.define(
+  "Item",
+  {
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
 
-export default mongoose.model("Item", itemSchema);
+    price: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+    },
+  },
+  {
+    timestamps: true,
+  },
+);
+
+export default Item;
