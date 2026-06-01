@@ -30,7 +30,7 @@ const Installation = sequelize.define(
     },
   },
   {
-    timestamps: true,
+    timestamps: false,
   },
 );
 

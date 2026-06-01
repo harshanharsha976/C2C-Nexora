@@ -30,7 +30,7 @@ const Service = sequelize.define(
     },
   },
   {
-    timestamps: true,
+    timestamps: false,
   },
 );
 

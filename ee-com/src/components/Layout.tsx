@@ -79,7 +79,7 @@ function Layout() {
       {/* Main */}
       <div className="flex-grow-1">
         <nav className="navbar bg-light px-3 shadow-sm">
-          <span className="fw-bold">Dashboard</span>
+          <span className="fw-bold"> Admin Dashboard</span>
         </nav>
 
         <div className="p-4">

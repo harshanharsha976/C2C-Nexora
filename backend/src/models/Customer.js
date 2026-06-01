@@ -20,7 +20,7 @@ const Customer = sequelize.define(
     },
   },
   {
-    timestamps: true,
+    timestamps: false,
   },
 );
 

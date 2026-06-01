@@ -4,11 +4,13 @@ import Service from "../models/Service.js";
 export const getServices = async (req, res) => {
   try {
     const data = await Service.findAll({
-      order: [["createdAt", "DESC"]],
+      order: [["id", "DESC"]],
     });
 
     res.json(data);
   } catch (err) {
+    console.log(err);
+
     res.status(500).json({
       message: err.message,
     });
@@ -22,6 +24,8 @@ export const addService = async (req, res) => {
 
     res.status(201).json(saved);
   } catch (err) {
+    console.log(err);
+
     res.status(500).json({
       message: err.message,
     });
@@ -41,6 +45,8 @@ export const updateService = async (req, res) => {
 
     res.json(updated);
   } catch (err) {
+    console.log(err);
+
     res.status(500).json({
       message: err.message,
     });
@@ -60,6 +66,8 @@ export const deleteService = async (req, res) => {
       message: "Deleted",
     });
   } catch (err) {
+    console.log(err);
+
     res.status(500).json({
       message: err.message,
     });

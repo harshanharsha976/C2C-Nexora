@@ -15,7 +15,7 @@ const Item = sequelize.define(
     },
   },
   {
-    timestamps: true,
+    timestamps: false,
   },
 );
 
