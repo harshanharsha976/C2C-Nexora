@@ -1,4 +1,4 @@
-// store/installationStore.ts
+
 
 export type Installation = {
   id: number;
@@ -8,8 +8,6 @@ export type Installation = {
   date: string;
   status: "Pending" | "Completed";
 };
-
-// ✅ Safe load function
 const loadInstallations = (): Installation[] => {
   try {
     const data = localStorage.getItem("installations");
@@ -23,5 +21,4 @@ const loadInstallations = (): Installation[] => {
   }
 };
 
-// ✅ Export global array
 export const installations: Installation[] = loadInstallations();

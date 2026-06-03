@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 type Customer = {
-  _id: string;
+  id: string;
   name: string;
   phone: string;
   address: string;
@@ -16,74 +16,117 @@ function Customers() {
   const [address, setAddress] = useState("");
   const [editId, setEditId] = useState<string | null>(null);
 
-  // ✅ GET DATA FROM BACKEND
-  const fetchCustomers = async () => {
-    const res = await fetch(`${API}/customers`);
-    const data = await res.json();
-    setCustomers(data);
-  };
-
   useEffect(() => {
-    fetchCustomers();
+    const loadCustomers = async () => {
+      try {
+        const res = await fetch(`${API}/customers`);
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch customers");
+        }
+
+        const data = await res.json();
+        setCustomers(data);
+      } catch (error) {
+        console.error("Fetch Error:", error);
+      }
+    };
+
+    loadCustomers();
   }, []);
 
-  // ✅ ADD / UPDATE
+  const fetchCustomers = async () => {
+    try {
+      const res = await fetch(`${API}/customers`);
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch customers");
+      }
+
+      const data = await res.json();
+      setCustomers(data);
+    } catch (error) {
+      console.error("Fetch Error:", error);
+    }
+  };
+
   const handleAddOrUpdate = async () => {
     if (!name || !phone) {
-      alert("Enter name and phone");
+      alert("Please enter Name and Phone");
       return;
     }
 
-    if (editId) {
-      // UPDATE
-      await fetch(`${API}/customers/${editId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, phone, address }),
-      });
-      setEditId(null);
-    } else {
-      // ADD
-      await fetch(`${API}/customers`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, phone, address }),
-      });
+    try {
+      if (editId) {
+        await fetch(`${API}/customers/${editId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name,
+            phone,
+            address,
+          }),
+        });
+
+        setEditId(null);
+      } else {
+        await fetch(`${API}/customers`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name,
+            phone,
+            address,
+          }),
+        });
+      }
+
+      setName("");
+      setPhone("");
+      setAddress("");
+
+      fetchCustomers();
+    } catch (error) {
+      console.error("Save Error:", error);
     }
-
-    setName("");
-    setPhone("");
-    setAddress("");
-    fetchCustomers(); // refresh
   };
 
-  // ✅ EDIT
-  const handleEdit = (c: Customer) => {
-    setName(c.name);
-    setPhone(c.phone);
-    setAddress(c.address);
-    setEditId(c._id);
+  const handleEdit = (customer: Customer) => {
+    setName(customer.name);
+    setPhone(customer.phone);
+    setAddress(customer.address);
+    setEditId(customer.id);
   };
 
-  // ✅ DELETE
   const handleDelete = async (id: string) => {
-    await fetch(`${API}/customers/${id}`, {
-      method: "DELETE",
-    });
-    fetchCustomers();
+    if (!window.confirm("Delete this customer?")) return;
+
+    try {
+      await fetch(`${API}/customers/${id}`, {
+        method: "DELETE",
+      });
+
+      fetchCustomers();
+    } catch (error) {
+      console.error("Delete Error:", error);
+    }
   };
 
   return (
     <div className="container mt-4">
       <h2 className="mb-4">👥 Customers</h2>
 
-      {/* FORM */}
       <div className="card shadow p-3 mb-4">
         <div className="row g-2">
           <div className="col-md-3">
             <input
+              type="text"
               className="form-control"
-              placeholder="Name"
+              placeholder="Customer Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
@@ -91,8 +134,9 @@ function Customers() {
 
           <div className="col-md-3">
             <input
+              type="text"
               className="form-control"
-              placeholder="Phone"
+              placeholder="Phone Number"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
             />
@@ -100,6 +144,7 @@ function Customers() {
 
           <div className="col-md-4">
             <input
+              type="text"
               className="form-control"
               placeholder="Address"
               value={address}
@@ -118,16 +163,15 @@ function Customers() {
         </div>
       </div>
 
-      {/* TABLE */}
       <div className="card shadow">
         <div className="card-body table-responsive">
-          <table className="table table-hover">
+          <table className="table table-bordered table-hover">
             <thead className="table-dark">
               <tr>
                 <th>Name</th>
                 <th>Phone</th>
                 <th>Address</th>
-                <th>Action</th>
+                <th style={{ width: "180px" }}>Action</th>
               </tr>
             </thead>
 
@@ -135,26 +179,26 @@ function Customers() {
               {customers.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="text-center">
-                    No Customers
+                    No Customers Found
                   </td>
                 </tr>
               ) : (
-                customers.map((c) => (
-                  <tr key={c._id}>
-                    <td>{c.name}</td>
-                    <td>{c.phone}</td>
-                    <td>{c.address}</td>
+                customers.map((customer) => (
+                  <tr key={customer.id}>
+                    <td>{customer.name}</td>
+                    <td>{customer.phone}</td>
+                    <td>{customer.address}</td>
                     <td>
                       <button
-                        className="btn btn-sm btn-warning me-2"
-                        onClick={() => handleEdit(c)}
+                        className="btn btn-warning btn-sm me-2"
+                        onClick={() => handleEdit(customer)}
                       >
                         Edit
                       </button>
 
                       <button
-                        className="btn btn-sm btn-danger"
-                        onClick={() => handleDelete(c._id)}
+                        className="btn btn-danger btn-sm"
+                        onClick={() => handleDelete(customer.id)}
                       >
                         Delete
                       </button>

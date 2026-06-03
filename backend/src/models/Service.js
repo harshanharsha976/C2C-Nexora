@@ -1,4 +1,3 @@
-
 import { DataTypes } from "sequelize";
 import { sequelize } from "../config/mysql.js";
 
@@ -13,6 +12,11 @@ const Service = sequelize.define(
     product: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+
+    technician: {
+      type: DataTypes.STRING,
+      allowNull: true, 
     },
 
     issue: {

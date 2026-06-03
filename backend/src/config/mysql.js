@@ -3,9 +3,9 @@
 import { Sequelize } from "sequelize";
 
 export const sequelize = new Sequelize(
-  "waterpurifier", // database name
-  "root", // mysql username
-  "Harshan#.000", // mysql password
+  "waterpurifier", 
+  "root", 
+  "Harshan#.000", 
   {
     host: "localhost",
     dialect: "mysql",

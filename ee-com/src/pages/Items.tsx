@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 type Item = {
-  _id: string; // ✅ MongoDB id
+  id: string;
   name: string;
   price: number;
 };
@@ -14,134 +14,182 @@ function Items() {
   const [price, setPrice] = useState<number>(0);
   const [editId, setEditId] = useState<string | null>(null);
 
-  // ✅ GET ITEMS FROM BACKEND
-  const fetchItems = async () => {
-    const res = await fetch(`${API}/items`);
-    const data = await res.json();
-    setItems(data);
-  };
-
   useEffect(() => {
-    fetchItems();
+    const loadItems = async () => {
+      try {
+        const res = await fetch(`${API}/items`);
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch items");
+        }
+
+        const data = await res.json();
+        setItems(data);
+      } catch (error) {
+        console.error("Fetch Error:", error);
+      }
+    };
+
+    loadItems();
   }, []);
 
-  // ✅ ADD / UPDATE
+  const fetchItems = async () => {
+    try {
+      const res = await fetch(`${API}/items`);
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch items");
+      }
+
+      const data = await res.json();
+      setItems(data);
+    } catch (error) {
+      console.error("Fetch Error:", error);
+    }
+  };
+
   const handleAddOrUpdate = async () => {
-    if (!name) {
-      alert("Enter item name");
+    if (!name || price <= 0) {
+      alert("Enter item name and price");
       return;
     }
 
-    if (editId) {
-      // UPDATE
-      await fetch(`${API}/items/${editId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, price }),
-      });
-      setEditId(null);
-    } else {
-      // ADD
-      await fetch(`${API}/items`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, price }),
-      });
-    }
+    try {
+      if (editId) {
+        await fetch(`${API}/items/${editId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name,
+            price,
+          }),
+        });
 
-    setName("");
-    setPrice(0);
-    fetchItems(); // refresh
+        setEditId(null);
+      } else {
+        await fetch(`${API}/items`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name,
+            price,
+          }),
+        });
+      }
+
+      setName("");
+      setPrice(0);
+
+      fetchItems();
+    } catch (error) {
+      console.error("Save Error:", error);
+    }
   };
 
-  // ✅ EDIT
   const handleEdit = (item: Item) => {
     setName(item.name);
     setPrice(item.price);
-    setEditId(item._id);
+    setEditId(item.id);
   };
 
-  // ✅ DELETE
   const handleDelete = async (id: string) => {
-    await fetch(`${API}/items/${id}`, {
-      method: "DELETE",
-    });
+    if (!window.confirm("Delete this item?")) return;
 
-    fetchItems();
+    try {
+      await fetch(`${API}/items/${id}`, {
+        method: "DELETE",
+      });
+
+      fetchItems();
+    } catch (error) {
+      console.error("Delete Error:", error);
+    }
   };
 
   return (
     <div className="container mt-4">
       <h2 className="mb-4">📦 Water Purifier Items</h2>
 
-      {/* FORM */}
-      <div className="card shadow p-3 mb-4">
-        <div className="row g-2">
-          <div className="col-md-4">
-            <input
-              className="form-control"
-              placeholder="Item name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
+      
+      <div className="card shadow-sm mb-4">
+        <div className="card-body">
+          <div className="row g-2">
+            <div className="col-md-5">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Item Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
 
-          <div className="col-md-4">
-            <input
-              type="number"
-              className="form-control"
-              placeholder="Price"
-              value={price}
-              onChange={(e) => setPrice(Number(e.target.value))}
-            />
-          </div>
+            <div className="col-md-5">
+              <input
+                type="number"
+                className="form-control"
+                placeholder="Price"
+                value={price}
+                onChange={(e) => setPrice(Number(e.target.value))}
+              />
+            </div>
 
-          <div className="col-md-4">
-            <button
-              className={`btn w-100 ${editId ? "btn-warning" : "btn-primary"}`}
-              onClick={handleAddOrUpdate}
-            >
-              {editId ? "Update Item" : "Add Item"}
-            </button>
+            <div className="col-md-2">
+              <button
+                className={`btn w-100 ${
+                  editId ? "btn-warning" : "btn-primary"
+                }`}
+                onClick={handleAddOrUpdate}
+              >
+                {editId ? "Update" : "Add"}
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* TABLE */}
-      <div className="card shadow">
+      
+      <div className="card shadow-sm">
         <div className="card-body table-responsive">
-          <table className="table table-hover">
+          <table className="table table-bordered table-hover">
             <thead className="table-dark">
               <tr>
-                <th>Name</th>
+                <th>#</th>
+                <th>Item Name</th>
                 <th>Price</th>
-                <th>Action</th>
+                <th style={{ width: "180px" }}>Action</th>
               </tr>
             </thead>
 
             <tbody>
               {items.length === 0 ? (
                 <tr>
-                  <td colSpan={3} className="text-center">
-                    No Items
+                  <td colSpan={4} className="text-center">
+                    No Items Found
                   </td>
                 </tr>
               ) : (
-                items.map((item) => (
-                  <tr key={item._id}>
+                items.map((item, index) => (
+                  <tr key={item.id}>
+                    <td>{index + 1}</td>
                     <td>{item.name}</td>
                     <td>₹{item.price}</td>
+
                     <td>
                       <button
-                        className="btn btn-sm btn-warning me-2"
+                        className="btn btn-warning btn-sm me-2"
                         onClick={() => handleEdit(item)}
                       >
                         Edit
                       </button>
 
                       <button
-                        className="btn btn-sm btn-danger"
-                        onClick={() => handleDelete(item._id)}
+                        className="btn btn-danger btn-sm"
+                        onClick={() => handleDelete(item.id)}
                       >
                         Delete
                       </button>

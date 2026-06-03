@@ -12,31 +12,42 @@ const API = "http://localhost:5000/api";
 function StatusView() {
   const [serviceList, setServiceList] = useState<Service[]>([]);
 
-  // ✅ FETCH FROM BACKEND
-  const fetchServices = async () => {
-    try {
-      const res = await fetch(`${API}/services`);
-      const data = await res.json();
-      setServiceList(data);
-    } catch (err) {
-      console.error("Error fetching services:", err);
-    }
-  };
-
   useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const res = await fetch(`${API}/services`);
+        const json = await res.json();
+
+        
+        const list = Array.isArray(json)
+          ? json
+          : json.data || json.services || [];
+
+        setServiceList(list);
+      } catch (err) {
+        console.error("Error fetching services:", err);
+      }
+    };
+
     fetchServices();
   }, []);
 
-  // ✅ CALCULATIONS
+  
   const total = serviceList.length;
-  const pending = serviceList.filter((s) => s.status === "Pending").length;
-  const completed = serviceList.filter((s) => s.status === "Completed").length;
+
+  const pending = serviceList.filter(
+    (s) => s.status?.toLowerCase().trim() === "pending",
+  ).length;
+
+  const completed = serviceList.filter(
+    (s) => s.status?.toLowerCase().trim() === "completed",
+  ).length;
 
   return (
     <div className="container-fluid">
       <h2 className="mb-4">📊 Service Status</h2>
 
-      {/* DASHBOARD CARDS */}
+      {/* CARDS */}
       <div className="row mb-4">
         <div className="col-md-4">
           <div className="card shadow text-center p-3">
@@ -73,13 +84,7 @@ function StatusView() {
             </thead>
 
             <tbody>
-              {serviceList.length === 0 ? (
-                <tr>
-                  <td colSpan={3} className="text-center">
-                    No Services Available
-                  </td>
-                </tr>
-              ) : (
+              {serviceList.length > 0 ? (
                 serviceList.map((s) => (
                   <tr key={s._id}>
                     <td>{s.customer}</td>
@@ -87,7 +92,7 @@ function StatusView() {
                     <td>
                       <span
                         className={`badge ${
-                          s.status === "Completed"
+                          s.status?.toLowerCase() === "completed"
                             ? "bg-success"
                             : "bg-warning text-dark"
                         }`}
@@ -97,6 +102,12 @@ function StatusView() {
                     </td>
                   </tr>
                 ))
+              ) : (
+                <tr>
+                  <td colSpan={3} className="text-center">
+                    No Services Available
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>

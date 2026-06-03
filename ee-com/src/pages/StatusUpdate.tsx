@@ -15,64 +15,68 @@ function StatusUpdate() {
   const [services, setServices] = useState<Service[]>([]);
   const [search, setSearch] = useState("");
 
-  // ✅ FETCH ONLY PENDING
-  const fetchPending = async () => {
+  
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await fetch(`${API}/services`);
+        const json = await res.json();
+
+        const list = Array.isArray(json) ? json : json.data || [];
+
+        // only pending services
+        const pending = list.filter((s: Service) => s.status === "Pending");
+
+        setServices(pending);
+      } catch (err) {
+        console.error("Fetch error:", err);
+      }
+    };
+
+    load();
+  }, []);
+
+  
+  const handleComplete = async (_id: string) => {
     try {
+      await fetch(`${API}/services/${_id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "Completed" }),
+      });
+
+      // refresh
       const res = await fetch(`${API}/services`);
-      const data = await res.json();
+      const json = await res.json();
 
-      const pending = data.filter((s: Service) => s.status === "Pending");
+      const list = Array.isArray(json) ? json : json.data || [];
 
-      setServices(pending);
+      setServices(list.filter((s: Service) => s.status === "Pending"));
     } catch (err) {
       console.error(err);
     }
   };
 
-  useEffect(() => {
-    fetchPending();
-  }, []);
-
-  // ✅ UPDATE STATUS
-  const handleUpdate = async (id: string) => {
-    try {
-      await fetch(`${API}/services/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          status: "Completed",
-        }),
-      });
-
-      fetchPending();
-    } catch (err) {
-      console.error("Update error:", err);
-    }
-  };
-
-  // ✅ SEARCH
+  
   const filtered = services.filter(
     (s) =>
       s.customer.toLowerCase().includes(search.toLowerCase()) ||
-      s.product.toLowerCase().includes(search.toLowerCase()),
+      s.product.toLowerCase().includes(search.toLowerCase()) ||
+      s.issue.toLowerCase().includes(search.toLowerCase()),
   );
 
   return (
     <div className="container mt-4">
       <h2 className="mb-4 text-warning">⚙️ Status Update</h2>
 
-      {/* SEARCH */}
+      
       <input
-        type="text"
         className="form-control mb-3"
         placeholder="Search pending services..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
 
-      {/* TABLE */}
       <div className="card shadow-sm">
         <div className="card-body table-responsive">
           <table className="table table-bordered table-hover">
@@ -84,7 +88,7 @@ function StatusUpdate() {
                 <th>Issue</th>
                 <th>Date</th>
                 <th>Status</th>
-                <th>Update</th>
+                <th>Actions</th>
               </tr>
             </thead>
 
@@ -98,9 +102,7 @@ function StatusUpdate() {
                     <td>{s.issue}</td>
 
                     <td>
-                      {s.date
-                        ? new Date(s.date).toISOString().split("T")[0]
-                        : ""}
+                      {s.date ? new Date(s.date).toLocaleDateString() : ""}
                     </td>
 
                     <td>
@@ -112,9 +114,9 @@ function StatusUpdate() {
                     <td>
                       <button
                         className="btn btn-success btn-sm"
-                        onClick={() => handleUpdate(s.id)}
+                        onClick={() => handleComplete(s.id)}
                       >
-                        Mark Completed
+                        Complete
                       </button>
                     </td>
                   </tr>

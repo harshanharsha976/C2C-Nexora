@@ -5,7 +5,7 @@ type Service = {
   customer: string;
   product: string;
   status: string;
-  date: string; // ✅ required for filtering
+  date: string; 
 };
 
 const API = "http://localhost:5000/api";
@@ -13,7 +13,7 @@ const API = "http://localhost:5000/api";
 function Home() {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedDate, setSelectedDate] = useState(""); // ✅ NEW
+  const [selectedDate, setSelectedDate] = useState(""); 
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -41,14 +41,14 @@ function Home() {
     fetchServices();
   }, []);
 
-  // ✅ DATE FILTER LOGIC
+
   const filteredServices = selectedDate
     ? services.filter(
         (s) => new Date(s.date).toISOString().split("T")[0] === selectedDate,
       )
     : services;
 
-  // ✅ CALCULATIONS
+
   const total = filteredServices.length;
   const pending = filteredServices.filter((s) => s.status === "Pending").length;
   const completed = filteredServices.filter(
@@ -63,7 +63,7 @@ function Home() {
     <div className="container mt-4">
       <h2 className="mb-4">Dashboard Overview</h2>
 
-      {/* ✅ DATE FILTER */}
+    
       <div className="mb-3">
         <input
           type="date"
@@ -82,7 +82,7 @@ function Home() {
           </div>
         </div>
 
-        {/* PENDING */}
+        
         <div className="col-md-4">
           <div className="card bg-warning text-dark p-3 text-center">
             <h5>Pending</h5>
@@ -90,7 +90,7 @@ function Home() {
           </div>
         </div>
 
-        {/* COMPLETED */}
+      
         <div className="col-md-4">
           <div className="card bg-success text-white p-3 text-center">
             <h5>Completed</h5>

@@ -9,16 +9,12 @@ import {
 
 const router = express.Router();
 
-// ✅ GET ALL INSTALLATIONS
 router.get("/", getInstallations);
 
-// ✅ ADD INSTALLATION
-router.post("/", addInstallation);
 
-// ✅ UPDATE INSTALLATION
+router.post("/", addInstallation);
 router.put("/:id", updateInstallation);
 
-// ✅ DELETE INSTALLATION
 router.delete("/:id", deleteInstallation);
 
 export default router;

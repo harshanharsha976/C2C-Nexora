@@ -1,6 +1,6 @@
 import Item from "../models/Item.js";
 
-// GET
+
 export const getItems = async (req, res) => {
   try {
     const data = await Item.findAll();
@@ -12,7 +12,6 @@ export const getItems = async (req, res) => {
   }
 };
 
-// ADD
 export const addItem = async (req, res) => {
   try {
     const saved = await Item.create(req.body);
@@ -25,7 +24,6 @@ export const addItem = async (req, res) => {
   }
 };
 
-// DELETE
 export const deleteItem = async (req, res) => {
   try {
     await Item.destroy({

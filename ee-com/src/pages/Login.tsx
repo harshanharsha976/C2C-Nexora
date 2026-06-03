@@ -8,10 +8,10 @@ function Login() {
   const navigate = useNavigate();
 
   const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault(); // 🔥 IMPORTANT
+    e.preventDefault(); 
 
     if (username === "admin" && password === "1234") {
-      console.log("Login success"); // debug
+      console.log("Login success"); 
       navigate("/dashboard/home");
     }
       else if (username === "tech" && password === "1234") {

@@ -1,6 +1,6 @@
 import Service from "../models/Service.js";
 
-// ✅ GET ALL
+
 export const getServices = async (req, res) => {
   try {
     const data = await Service.findAll({
@@ -17,7 +17,7 @@ export const getServices = async (req, res) => {
   }
 };
 
-// ✅ ADD
+
 export const addService = async (req, res) => {
   try {
     const saved = await Service.create(req.body);
@@ -32,7 +32,7 @@ export const addService = async (req, res) => {
   }
 };
 
-// ✅ UPDATE
+
 export const updateService = async (req, res) => {
   try {
     await Service.update(req.body, {
@@ -53,7 +53,6 @@ export const updateService = async (req, res) => {
   }
 };
 
-// ✅ DELETE
 export const deleteService = async (req, res) => {
   try {
     await Service.destroy({

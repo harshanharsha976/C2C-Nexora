@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 type Service = {
-  _id: string;
+  id: string;
   customer: string;
   product: string;
   issue: string;
@@ -15,39 +15,60 @@ function CompletedServices() {
   const [services, setServices] = useState<Service[]>([]);
   const [search, setSearch] = useState("");
 
-  // ✅ FETCH ONLY COMPLETED
+  useEffect(() => {
+    const loadCompletedServices = async () => {
+      try {
+        const res = await fetch(`${API}/services`);
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch services");
+        }
+
+        const data = await res.json();
+
+        const completed = data.filter((s: Service) => s.status === "Completed");
+
+        setServices(completed);
+      } catch (error) {
+        console.error("Fetch Error:", error);
+      }
+    };
+
+    loadCompletedServices();
+  }, []);
+
   const fetchCompletedServices = async () => {
     try {
       const res = await fetch(`${API}/services`);
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch services");
+      }
+
       const data = await res.json();
 
-      // 🔥 filter only completed
       const completed = data.filter((s: Service) => s.status === "Completed");
 
       setServices(completed);
-    } catch (err) {
-      console.error("Error fetching completed services:", err);
+    } catch (error) {
+      console.error("Fetch Error:", error);
     }
   };
 
-  useEffect(() => {
-    fetchCompletedServices();
-  }, []);
-
-  // ❌ DELETE
   const handleDelete = async (id: string) => {
+    if (!window.confirm("Delete this completed service?")) return;
+
     try {
       await fetch(`${API}/services/${id}`, {
         method: "DELETE",
       });
 
       fetchCompletedServices();
-    } catch (err) {
-      console.error("Delete error:", err);
+    } catch (error) {
+      console.error("Delete Error:", error);
     }
   };
 
-  // 🔍 SEARCH FILTER
   const filtered = services.filter(
     (s) =>
       s.customer.toLowerCase().includes(search.toLowerCase()) ||
@@ -59,7 +80,6 @@ function CompletedServices() {
     <div className="container mt-4">
       <h2 className="mb-4 text-success">✅ Completed Services</h2>
 
-      {/* SEARCH */}
       <div className="mb-3">
         <input
           className="form-control"
@@ -69,7 +89,6 @@ function CompletedServices() {
         />
       </div>
 
-      {/* TABLE */}
       <div className="card shadow-sm">
         <div className="card-body table-responsive">
           <table className="table table-bordered table-hover">
@@ -86,39 +105,40 @@ function CompletedServices() {
             </thead>
 
             <tbody>
-              {filtered.map((s, index) => (
-                <tr key={s._id}>
-                  <td>{index + 1}</td>
-                  <td>{s.customer}</td>
-                  <td>{s.product}</td>
-                  <td>{s.issue}</td>
-
-                  {/* ✅ DATE ONLY */}
-                  <td>
-                    {s.date ? new Date(s.date).toISOString().split("T")[0] : ""}
-                  </td>
-
-                  <td>
-                    <span className="badge bg-success">{s.status}</span>
-                  </td>
-
-                  <td>
-                    <button
-                      className="btn btn-danger btn-sm"
-                      onClick={() => handleDelete(s._id)}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-
-              {filtered.length === 0 && (
+              {filtered.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="text-center">
                     No completed services found
                   </td>
                 </tr>
+              ) : (
+                filtered.map((service, index) => (
+                  <tr key={service.id}>
+                    <td>{index + 1}</td>
+                    <td>{service.customer}</td>
+                    <td>{service.product}</td>
+                    <td>{service.issue}</td>
+
+                    <td>
+                      {service.date
+                        ? new Date(service.date).toISOString().split("T")[0]
+                        : ""}
+                    </td>
+
+                    <td>
+                      <span className="badge bg-success">{service.status}</span>
+                    </td>
+
+                    <td>
+                      <button
+                        className="btn btn-danger btn-sm"
+                        onClick={() => handleDelete(service.id)}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>

@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { items } from "../store/itemStore";
 
 type Service = {
-  id: string;
+  id?: number;
+  _id?: string;
   customer: string;
   product: string;
+  technician: string;
   issue: string;
   date: string;
   status: string;
@@ -12,40 +14,67 @@ type Service = {
 
 const API = "http://localhost:5000/api";
 
+const technicians = [
+  { id: 1, name: "Ravi Kumar senior tech" },
+  { id: 2, name: "Arun Kumar field tech" },
+  { id: 3, name: "Suresh service tech" },
+  { id: 4, name: "Kiran field tech" },
+  { id: 5, name: "Punith junior tech" },
+];
+
 function Services() {
   const [customer, setCustomer] = useState("");
   const [product, setProduct] = useState("");
+  const [technician, setTechnician] = useState("");
   const [issue, setIssue] = useState("");
   const [date, setDate] = useState("");
 
   const [serviceList, setServiceList] = useState<Service[]>([]);
-
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("Pending");
+  const [statusFilter, setStatusFilter] = useState("All");
 
-  // ✅ FETCH DATA
-  const fetchServices = async () => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const res = await fetch(`${API}/services`);
+
+        if (!res.ok) throw new Error("API error");
+
+        const data = await res.json();
+        setServiceList(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load services");
+        setServiceList([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  
+  const refresh = async () => {
     try {
       const res = await fetch(`${API}/services`);
       const data = await res.json();
-
-      if (Array.isArray(data)) {
-        setServiceList(data);
-      } else {
-        setServiceList([]);
-      }
+      setServiceList(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error("Error fetching services:", err);
+      console.error(err);
     }
   };
 
-  useEffect(() => {
-    fetchServices();
-  }, []);
 
-  // ➕ ADD SERVICE
   const handleAdd = async () => {
-    if (!customer || !product || !issue || !date) {
+    if (!customer || !product || !technician || !issue || !date) {
       alert("Fill all fields");
       return;
     }
@@ -53,112 +82,96 @@ function Services() {
     try {
       await fetch(`${API}/services`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           customer,
           product,
+          technician,
           issue,
           date,
           status: "Pending",
         }),
       });
 
-      // ✅ RESET
       setCustomer("");
       setProduct("");
+      setTechnician("");
       setIssue("");
       setDate("");
 
-      fetchServices();
+      refresh();
     } catch (err) {
-      console.error("Error adding service:", err);
+      console.error("Add error:", err);
     }
   };
 
-  // ✅ COMPLETE SERVICE
-  const handleComplete = async (id: string) => {
+  
+  const handleComplete = async (id?: number | string) => {
+    if (!id) return;
+
     try {
       await fetch(`${API}/services/${id}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          status: "Completed",
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "Completed" }),
       });
 
-      fetchServices();
+      refresh();
     } catch (err) {
-      console.error("Error updating service:", err);
+      console.error("Update error:", err);
     }
   };
 
-  // ❌ DELETE SERVICE
-  const handleDelete = async (id: string) => {
+  
+  const handleDelete = async (id?: number | string) => {
+    if (!id) return;
+
     try {
       await fetch(`${API}/services/${id}`, {
         method: "DELETE",
       });
 
-      fetchServices();
+      refresh();
     } catch (err) {
-      console.error("Error deleting service:", err);
+      console.error("Delete error:", err);
     }
   };
 
-  // 🔍 FILTER
+  
   const filtered = serviceList
+    .filter((s) => (statusFilter === "All" ? true : s.status === statusFilter))
     .filter((s) =>
-      statusFilter === "All"
-        ? true
-        : s.status === statusFilter,
-    )
-    .filter(
-      (s) =>
-        s.customer
-          .toLowerCase()
-          .includes(search.toLowerCase()) ||
-        s.product
-          .toLowerCase()
-          .includes(search.toLowerCase()) ||
-        s.issue
-          .toLowerCase()
-          .includes(search.toLowerCase()),
+      `${s.customer} ${s.product} ${s.technician} ${s.issue}`
+        .toLowerCase()
+        .includes(search.toLowerCase()),
     );
 
   return (
     <div className="container">
       <h2 className="mb-4">Services</h2>
 
+      {error && <div className="alert alert-danger">{error}</div>}
+      {loading && <p className="text-center">Loading...</p>}
+
       {/* FORM */}
       <div className="card p-3 mb-4 shadow-sm">
         <div className="row g-2">
-          {/* CUSTOMER */}
-          <div className="col-md-3">
+          <div className="col-md-2">
             <input
               className="form-control"
-              placeholder="Enter Customer Name"
+              placeholder="Customer"
               value={customer}
-              onChange={(e) =>
-                setCustomer(e.target.value)
-              }
+              onChange={(e) => setCustomer(e.target.value)}
             />
           </div>
 
-          {/* PRODUCT */}
-          <div className="col-md-3">
+          <div className="col-md-2">
             <select
               className="form-select"
               value={product}
-              onChange={(e) =>
-                setProduct(e.target.value)
-              }
+              onChange={(e) => setProduct(e.target.value)}
             >
-              <option value="">Select Product</option>
-
+              <option value="">Product</option>
               {items.map((i) => (
                 <option key={i.id} value={i.name}>
                   {i.name}
@@ -167,59 +180,60 @@ function Services() {
             </select>
           </div>
 
-          {/* ISSUE */}
+          <div className="col-md-2">
+            <select
+              className="form-select"
+              value={technician}
+              onChange={(e) => setTechnician(e.target.value)}
+            >
+              <option value="">Technician</option>
+              {technicians.map((t) => (
+                <option key={t.id} value={t.name}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div className="col-md-2">
             <input
               className="form-control"
-              placeholder="Enter issue"
+              placeholder="Issue"
               value={issue}
-              onChange={(e) =>
-                setIssue(e.target.value)
-              }
+              onChange={(e) => setIssue(e.target.value)}
             />
           </div>
 
-          {/* DATE */}
           <div className="col-md-2">
             <input
               type="date"
               className="form-control"
               value={date}
-              onChange={(e) =>
-                setDate(e.target.value)
-              }
+              onChange={(e) => setDate(e.target.value)}
             />
           </div>
 
-          {/* BUTTON */}
           <div className="col-md-2">
-            <button
-              className="btn btn-primary w-100"
-              onClick={handleAdd}
-            >
+            <button className="btn btn-primary w-100" onClick={handleAdd}>
               Add
             </button>
           </div>
         </div>
       </div>
 
-      {/* SEARCH */}
+      
       <div className="d-flex mb-3 gap-2">
         <input
           className="form-control"
           placeholder="Search..."
           value={search}
-          onChange={(e) =>
-            setSearch(e.target.value)
-          }
+          onChange={(e) => setSearch(e.target.value)}
         />
 
         <select
           className="form-select w-auto"
           value={statusFilter}
-          onChange={(e) =>
-            setStatusFilter(e.target.value)
-          }
+          onChange={(e) => setStatusFilter(e.target.value)}
         >
           <option value="All">All</option>
           <option value="Pending">Pending</option>
@@ -227,15 +241,16 @@ function Services() {
         </select>
       </div>
 
-      {/* TABLE */}
+      
       <div className="card shadow-sm">
-        <div className="card-body">
+        <div className="card-body table-responsive">
           <table className="table table-bordered table-hover">
             <thead className="table-dark">
               <tr>
                 <th>#</th>
                 <th>Customer</th>
                 <th>Product</th>
+                <th>Technician</th>
                 <th>Issue</th>
                 <th>Date</th>
                 <th>Status</th>
@@ -245,67 +260,53 @@ function Services() {
 
             <tbody>
               {filtered.length > 0 ? (
-                filtered.map((s, index) => (
-                  <tr key={s.id}>
-                    <td>{index + 1}</td>
+                filtered.map((s, index) => {
+                  const id = s.id ?? s._id;
 
-                    <td>{s.customer}</td>
+                  return (
+                    <tr key={id}>
+                      <td>{index + 1}</td>
+                      <td>{s.customer}</td>
+                      <td>{s.product}</td>
+                      <td>{s.technician}</td>
+                      <td>{s.issue}</td>
+                      <td>{s.date}</td>
 
-                    <td>{s.product}</td>
-
-                    <td>{s.issue}</td>
-
-                    {/* DATE ONLY */}
-                    <td>
-                      {s.date
-                        ? new Date(s.date)
-                            .toISOString()
-                            .split("T")[0]
-                        : ""}
-                    </td>
-
-                    <td>
-                      <span
-                        className={`badge ${
-                          s.status === "Pending"
-                            ? "bg-warning text-dark"
-                            : "bg-success"
-                        }`}
-                      >
-                        {s.status}
-                      </span>
-                    </td>
-
-                    <td>
-                      {s.status ===
-                        "Pending" && (
-                        <button
-                          className="btn btn-success btn-sm me-2"
-                          onClick={() =>
-                            handleComplete(s.id)
-                          }
+                      <td>
+                        <span
+                          className={`badge ${
+                            s.status === "Completed"
+                              ? "bg-success"
+                              : "bg-warning text-dark"
+                          }`}
                         >
-                          Complete
-                        </button>
-                      )}
+                          {s.status}
+                        </span>
+                      </td>
 
-                      <button
-                        className="btn btn-danger btn-sm"
-                        onClick={() =>
-                          handleDelete(s.id)
-                        }
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))
+                      <td>
+                        {s.status === "Pending" && (
+                          <button
+                            className="btn btn-success btn-sm me-2"
+                            onClick={() => handleComplete(id)}
+                          >
+                            Complete
+                          </button>
+                        )}
+
+                        <button
+                          className="btn btn-danger btn-sm"
+                          onClick={() => handleDelete(id)}
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
               ) : (
                 <tr>
-                  <td
-                    colSpan={7}
-                    className="text-center"
-                  >
+                  <td colSpan={8} className="text-center">
                     No data found
                   </td>
                 </tr>
@@ -318,4 +319,4 @@ function Services() {
   );
 }
 
-export default Services; 
+export default Services;

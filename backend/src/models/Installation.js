@@ -15,8 +15,8 @@ const Installation = sequelize.define(
     },
 
     technician: {
-      type: DataTypes.STRING,
-      allowNull: false,
+      type: DataTypes.STRING, 
+      allowNull: true,
     },
 
     date: {
@@ -30,7 +30,7 @@ const Installation = sequelize.define(
     },
   },
   {
-    timestamps: false,
+    timestamps: false, // keeps it simple (no createdAt/updatedAt)
   },
 );
 

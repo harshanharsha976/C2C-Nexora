@@ -1,6 +1,6 @@
 import Installation from "../models/Installation.js";
 
-// GET
+
 export const getInstallations = async (req, res) => {
   try {
     const data = await Installation.findAll();
@@ -13,7 +13,7 @@ export const getInstallations = async (req, res) => {
   }
 };
 
-// ADD
+
 export const addInstallation = async (req, res) => {
   try {
     const saved = await Installation.create(req.body);
@@ -26,7 +26,6 @@ export const addInstallation = async (req, res) => {
   }
 };
 
-// UPDATE
 export const updateInstallation = async (req, res) => {
   try {
     await Installation.update(req.body, {
@@ -45,7 +44,6 @@ export const updateInstallation = async (req, res) => {
   }
 };
 
-// DELETE
 export const deleteInstallation = async (req, res) => {
   try {
     await Installation.destroy({

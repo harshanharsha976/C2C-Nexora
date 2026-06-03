@@ -17,12 +17,10 @@ function TechnicianLayout() {
   return (
     <div className="container-fluid p-0">
       <div className="row g-0">
-        {/* SIDEBAR */}
+      
         <div className="col-md-2 bg-dark text-white min-vh-100 d-flex flex-column p-3">
-          {/* LOGO */}
           <h2 className="mb-4 fw-bold text-center">💧 WPMS</h2>
 
-          {/* MENU */}
           <div className="list-group">
             <NavLink to="/technician/customers" className={linkClass}>
               👥 Customers
@@ -41,7 +39,7 @@ function TechnicianLayout() {
             </NavLink>
           </div>
 
-          {/* LOGOUT BUTTON */}
+        
           <div className="mt-4">
             <button onClick={logout} className="btn btn-danger w-100 mt-4">
               Logout
@@ -49,14 +47,11 @@ function TechnicianLayout() {
           </div>
         </div>
 
-        {/* MAIN CONTENT */}
         <div className="col-md-10 bg-light min-vh-100 p-4">
           {/* TOP HEADER */}
           <div className="bg-white shadow-sm rounded p-3 mb-4">
             <h3 className="fw-bold mb-0">Technician Dashboard</h3>
           </div>
-
-          {/* PAGE CONTENT */}
           <Outlet />
         </div>
       </div>
